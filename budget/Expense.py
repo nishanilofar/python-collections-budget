@@ -1,26 +1,42 @@
-import collections
-import matplotlib.pyplot as plt # Remember need to pip install matplotlib
-from . import Expense
+import csv
+from datetime import datetime
 
-expenses = Expense.Expenses()
-expenses.read_expenses('data/spending_data.csv')
+class Expense():
+    def __init__(self, date_str, vendor, category, amount):
+        self.date_time = datetime.strptime(date_str, '%m/%d/%Y %H:%M:%S')
+        self.vendor = vendor
+        self.category = category
+        self.amount = amount
 
-spending_categories = []
-for expense in expenses.list:
-    spending_categories.append(expense.category)
 
-# Use collection Counter to count how many purchases were in each category
-spending_counter = collections.Counter(spending_categories)
-print(spending_counter)
-top5 = spending_counter.most_common(5)
-print("Number of categories = " + str(spending_counter.__len__())) #len(spendingCounter)))
-#print(top5)
+class Expenses():
+    def __init__(self):
+        self.list = []
+        self.sum = 0
 
-# zip puts 2 lists into a dict, *zip does the reverse
-categories, count = zip(*top5)
+    # Read in the December spending data, row[2] is the $$, and need to format $$
+    def read_expenses(self,filename):
+        with open(filename, newline='') as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=',')
+            for row in csvreader:
+                if '-' not in row[3]:
+                    continue
+                amount = float((row[3][2:]).replace(',',''))
+                self.list.append(Expense(row[0],row[1], row[2], amount))
+                self.sum += amount
 
-# Graph each spending category count as a bar chart
-fig,ax=plt.subplots()
-ax.bar(categories, count) #, color=[numpy.random.rand(3,) for _ in range(5)])
-ax.set_title('# of Purchases by Category')
-plt.show()
+    def categorize_for_loop(self):
+            necessary_expenses = set()
+            food_expenses = set()
+            unnecessary_expenses = set()
+            for i in self.list:
+                if (i.category == 'Phone'    or i.category == 'Auto and Gas' or 
+                    i.category == 'Classes'  or i.category == 'Utilities' or 
+                    i.category == 'Mortgage'): 
+                    necessary_expenses.add(i)
+                elif(i.category == 'Groceries' or i.category == 'Eating Out'):
+                    food_expenses.add(i)
+                else:
+                    unnecessary_expenses.add(i)
+            
+            return [necessary_expenses, food_expenses, unnecessary_expenses]
