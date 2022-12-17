@@ -25,6 +25,7 @@ class Expenses():
                 self.list.append(Expense(row[0],row[1], row[2], amount))
                 self.sum += amount
 
+
     def categorize_for_loop(self):
             necessary_expenses2 = set()
             food_expenses2 = set()
